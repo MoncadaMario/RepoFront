@@ -1,47 +1,76 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import axios from "axios";
+import { View, TextInput, Button, StyleSheet, Alert } from "react-native";
 import styles from "@/styles/styles";
 
-export default function AddProductScreen() {
-  const router = useRouter();
+const AddProduct = () => {
+    const [productData, setProductData] = useState({
+        id: '',
+        name: '',
+        category: '',
+        price: '',
+        quantity: ''
+    });
 
-  const [products, setProducts] = useState({
-    name: "",
-    category: "",
-    price: "",
-    quantity: "",
-  });
+    const handleChange = (name: string, value: string) => {
+        setProductData({ ...productData, [name]: value });
+    };
 
-  const handleChange = (field: string, value: string) => {
-    setProducts((prev) => ({ ...prev, [field]: value }));
-  };
+    const handleSubmit = async () => {
+        try {
+            const response = await axios.post("http://localhost:5277/api/Productos", productData);
+            Alert.alert("Producto agregado", `ID: ${response.data.id}`);
+            setProductData({
+                id: '',
+                name: '',
+                category: '',
+                price: '',
+                quantity: ''
+            });
+        } catch (error) {
+            console.error("Error al agregar el producto:", error);
+            Alert.alert("Error", "No se pudo agregar el producto. Inténtalo de nuevo.");
+        }
+    };
 
-  const saveProduct = () => {
-    const { name, category, price, quantity} = products;
-    if (!name || !category || !price || !quantity) {
-      Alert.alert("Error", "Todos los campos son obligatorios.");
-      return;
-    }
+    return (
+        
+        <View style={styles.container}>
+            <TextInput
+                placeholder="ID"
+                value={productData.id}
+                onChangeText={(value) => handleChange('id', value)}
+                style={styles.input}
+            />
+            <TextInput
+                placeholder="Nombre"
+                value={productData.name}
+                onChangeText={(value) => handleChange('name', value)}
+                style={styles.input}
+            />
+            <TextInput
+                placeholder="Categoría"
+                value={productData.category}
+                onChangeText={(value) => handleChange('category', value)}
+                style={styles.input}
+            />
+            <TextInput
+                placeholder="Precio"
+                value={productData.price}
+                onChangeText={(value) => handleChange('price', value)}
+                style={styles.input}
+                keyboardType="numeric"
+            />
+            <TextInput
+                placeholder="Cantidad"
+                value={productData.quantity}
+                onChangeText={(value) => handleChange('quantity', value)}
+                style={styles.input}
+                keyboardType="numeric"
+            />
+            <Button title="Agregar Producto" onPress={handleSubmit} />
+        </View>
+    );
+};
 
-    console.log("Producto guardado:", products);
-    Alert.alert("Éxito", "El producto se ha registrado correctamente.");
-    router.back();
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Registro de Inventario</Text>
-
-      <TextInput style={styles.input} placeholder="Nombre del producto" value={products.name} onChangeText={(text) => handleChange("name", text)} />
-      <TextInput style={styles.input} placeholder="Categoría" value={products.category} onChangeText={(text) => handleChange("category", text)} />
-      <TextInput style={styles.input} placeholder="Precio" value={products.price} onChangeText={(text) => handleChange("price", text)} keyboardType="numeric" />
-      <TextInput style={styles.input} placeholder="Cantidad" value={products.quantity} onChangeText={(text) => handleChange("quantity", text)} keyboardType="numeric" />
-      <TouchableOpacity style={styles.buttonSave} onPress={saveProduct}>
-        <Text style={styles.buttonText}>Guardar Producto</Text>
-      </TouchableOpacity>
-    </ScrollView>
-  );
-}
-
-
+export default AddProduct;
